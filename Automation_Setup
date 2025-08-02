@@ -316,7 +316,7 @@ Token:
 Round 2 – Daily Git Workflow
 ----------------------------
 git add -A                                # Stage all changes
-git commit -m "commit message"            # Commit with message
+git commit -m "commit message"            # Commit with message like first commit
 git push origin master                    # Push to remote repo (or use main)
 
 Pull Latest Code from GitHub
