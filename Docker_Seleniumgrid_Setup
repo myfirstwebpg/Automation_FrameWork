@@ -1,0 +1,242 @@
+Run Tests on Docker with Selenium Grid Environment.
+
+Docker- Containerization
+
+In our automation framework, we use Selenium Grid for running test cases in parallel across multiple browsers and machines. 
+To simplify the setup and scalability, we use Docker to containerize the Selenium Grid components. 
+We pull the necessary images like selenium/hub and selenium/node-chrome from Docker Hub and use Docker Compose to spin up the entire Grid quickly. 
+This helps us save time and ensures consistency across environments.
+
+We use Selenium Grid in a Dockerized setup to support distributed and parallel execution of Selenium tests. 
+of manually setting up the hub and nodes, we use Docker containers for each component—hub, Chrome node, and Firefox node.
+These images are pulled from Docker Hub, which simplifies dependency management. 
+We define everything in a docker-compose.yml file, so we can bring up the whole grid with a single command. 
+This setup is easily integrated into our CI/CD pipeline using Jenkins, 
+allowing automated test execution in a scalable and consistent environment
+
+How It Works in Your Framework ?
+--------------------------------
+1. Test scripts are written using TestNG + Selenium WebDriver.
+2. Execution environment (local or remote) is defined in a config file.
+3. If remote:
+   Selenium tests connect to the hub URL (http://localhost:4444/wd/hub).
+   Grid distributes tests to available browser nodes (Chrome, Firefox).
+4. Selenium Grid is run via Docker Compose.
+5. Docker images are pulled from Docker Hub automatically.
+
+Install docker 
+--------------
+Docker Desktop Not Opening – Fix Steps
+--------------------------------------
+When Docker Desktop fails to launch:
+
+1. Open Task Manager (Ctrl + Shift + Esc)
+2. End all processes related to:
+   Docker Desktop
+   com.docker.backend
+   vmmem
+   wslhost
+3. Delete Docker cache folders (⚠️ Don’t worry — this won’t delete images/containers):
+   C:\Users\Lenovo\AppData\Local\Docker
+   C:\Users\Lenovo\AppData\Roaming\Docker
+4. Restart your system
+5. Then re-launch Docker Desktop manually.
+
+
+1. Docker Basic Commands
+------------------------
+
+| Command          | Description                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| docker version   | Shows detailed Docker client & server version                               |
+| docker -v        | Shows short version (client only)                                           |
+| docker info      | Displays system-wide Docker information (images, containers, storage, etc.) |
+| docker --help    | Lists all available Docker commands and options                             |
+| docker login     | Logs into Docker Hub (or any Docker registry)                               |
+
+2. Docker Image Commands
+------------------------
+| Command                 | Description                               |
+| ----------------------- | ----------------------------------------- |
+| docker images           | List all downloaded images                |
+| docker pull ubuntu      | Download the Ubuntu image from Docker Hub |
+| docker rmi <image-id>   | Remove an image by its ID                 |
+
+3. Docker Container Commands
+----------------------------
+💡 From one image, we can create multiple containers.
+| Command                       | Description                                                             |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| docker ps                     | Show running containers                                                 |
+| docker ps -a                  | Show all containers (running + stopped)                                 |
+| docker run ubuntu             | Create and start a container from the Ubuntu image (pulls if not found) |
+| docker start <container-id>   | Start an existing container                                             |
+| docker stop <container-id>    | Stop a running container                                                |
+| docker rm <container-id>      | Remove a stopped container                                              |
+
+4. Docker System Commands
+--------------------------
+
+| Command                  | Description                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| docker stats             | Real-time live metrics (CPU, memory, I/O) for running containers                                |
+| docker system df         | Shows disk space used by Docker: images, containers, volumes, etc.                              |
+| docker system prune -f   | Forcefully removes **all unused**: stopped containers, unused images, networks, and build cache |
+
+
+
+Selenium Grid Setup with Docker Containers
+-------------------------------------------
+We will run a Selenium Grid using Docker containers, including:
+🔗 Hub
+🧭 Firefox Node (Linux-based)
+🌐 Chrome Node (Linux-based)
+
+
+*******Manual Selenium Grid Setup with Docker cointaners**********
+-------------------------------------------------------------
+
+Pull Docker Images
+------------------
+Pull Selenium-hub image using command: docker pull selenium/hub
+Pull Firefox image using command: docker pull selenium/node-firefox
+Pull Chrome image using below command: docker pull selenium/node-chrome
+
+Verify pulled Images: docker images
+
+1. Create a Custom Docker Network
+docker network create grid
+
+This creates an isolated network named grid so that containers can talk to each other by name (like selenium-hub).
+
+2. Run Selenium Hub
+docker run -d -p 4442-4444:4442-4444 --net grid --name selenium-hub selenium/hub
+
+Breakdown:
+-d: Run in detached mode (in backend it will apend)
+-p 4442-4444:4442-4444: Expose required ports to host
+--net grid: Connect to the grid network
+--name selenium-hub: Name the container
+selenium/hub: Image used
+
+3. Run Chrome Node
+docker run -d --net grid -e SE_EVENT_BUS_HOST=selenium-hub -e SE_EVENT_BUS_PUBLISH_PORT=4442 -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 selenium/node-chrome
+  
+This connects the Chrome node to the Hub via environment variables.
+
+4. Run Firefox Node
+docker run -d --net grid -e SE_EVENT_BUS_HOST=selenium-hub -e SE_EVENT_BUS_PUBLISH_PORT=4442 -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 selenium/node-firefox
+
+5. Check Grid Status
+Open in browser: http://localhost:4444
+You will see the Selenium Grid UI with Chrome and Firefox nodes registered.
+
+6. Optional Cleanup
+
+Stop Containers:
+----------------
+docker stop selenium-hub
+docker stop <chrome_container_id>
+docker stop <firefox_container_id>
+
+Remove Containers:
+------------------
+docker rm selenium-hub
+docker rm <chrome_container_id>
+docker rm <firefox_container_id>
+
+Remove Network:
+---------------
+docker network rm grid
+
+💡 Tip: we can also start/stop containers visually using Docker Desktop UI.
+
+*******Selenium Grid Setup with Docker compose.yaml file**********
+-------------------------------------------------------------------
+
+1) Create a file docker-compose.yaml with required config
+
+version: '3'
+
+services:
+
+ selenium-hub:
+ 
+  image: selenium/hub
+  
+  ports:
+  
+  -"4442-4444:4442-4444"
+  
+  networks:
+  
+  - grid
+  
+  
+ node-chrome:
+ 
+   image: selenium/node-chrome
+   
+   environment:
+   
+   -SE_EVENT_BUS_HOST=selenium-hub
+   
+   -SE_EVENT_BUS_PUBLISH_PORT=4442
+   
+   -SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+   
+   networks:
+   
+   -grid
+
+ node-firefox:
+    
+    image: selenium/node-firefox
+    
+    environment:
+    
+    -SE_EVENT_BUS_HOST=selenium-hub
+    
+    -SE_EVENT_BUS_PUBLISH_PORT=4442
+    
+    -SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    
+    networks:
+    
+    -grid
+   
+  networks:
+    
+    grid
+    
+     driver.bridge
+     
+---------------------
+Rename the File
+Rename dockercompose.yaml to:
+docker-compose.yaml
+
+Open CMD in That Folder 
+Run in CMD:
+cd C:\Users\Lenovo\eclipse-workspace\Automation_FrameWork     
+----------------------
+2) Start Selenium Grid- To Run docker-compose.yaml
+docker-compose up
+
+Launches the Selenium Hub and all defined nodes (Chrome, Firefox, etc.) in detached mode.
+
+3) Verify Grid Console- To check hub & nodes running state:
+http://localhost:4444/grid/console
+
+Shows the hub and connected nodes' status.
+
+4) Scale Up Chrome Nodes (Example: 3 Instances)- To increase number of nodes:
+docker-compose scale chrome=3
+
+Launches 3 Chrome containers.
+🔸 Note: docker-compose scale is deprecated in newer versions — use --scale instead with up -d.
+
+5) Stop and Clean Up Containers- To stop the grid and cleanup the created containers, run 
+docker-compose down
+
+Stops all containers and removes them along with the network.

@@ -1,0 +1,106 @@
+Automation Framework:
+---------------------
+We organize automation project files/folder in structured manner
+
+Objectives:
+-----------
+1. Re-usubility
+2. Maintainability
+3. Readability
+
+Types of frameworks
+-------------------
+1. Build-in:
+           ex: TestNG, Junit, Cucumber, Robot etc...
+           
+2. Customized (User defined):
+           ex: modular framework, data drive, keyword driven, hybrid driven etc..     
+           
+Phases/Stages:
+-------------
+1. Analyzing the app/build under test (AUT)
+          - Number of pages
+          - What are all elements /how to automate /type of elements they are
+          - What to automate / What we cannot automate
+
+2. Choose test cases for automation
+
+100 test cases --> 90 automatable  10 cannot automate 
+-> if able to automate 90 test cases then that is a 100% automation is possible
+
+Interview que: Is 100% automation possible? 
+-> If you are expecting the entire application should be automated if you are considering that as a 100% automation.
+   No, that is never possible.
+   But, if you are expecting to automate only the test cases that are automatable, 
+   then yes — it is possible to achieve 100% automation 
+   
+Choosing the Test cases for automation based on below priority
+Sanity test cases - P1
+Data driven test case/re-tests - P2 - If any test cases need test data/ repeation
+Regression test cases - P2 
+Any other cases - P4
+
+3. Design and Development of framework
+
+Framework will be designed by 3+ years exp.
+I haven't designed completed framework.
+I have done some contribution to the framework like i created page object classes, added utility file, 
+added some more test cases and executed.
+
+4. Execution - local, remotely
+
+5. Maintenance
+
+---------------------------------------
+
+In my previous project, I worked on a hybrid automation framework built using Selenium WebDriver, TestNG, and Java. 
+We used Page Object Model (POM) design pattern, and Maven for build management and dependency handling.
+
+The framework is modular and designed for reusability and scalability. Here's how it's structured:
+
+
+1. Base Class - Handles test-level setup like WebDriver initialization, loading configuration properties, 
+launching the browser, and teardown. 
+It’s the parent of all test classes.
+
+2. Base Page -	Contains common page-level actions like clickElement(), enterText(), and wait logic. 
+It promotes code reuse and is extended by individual page classes.
+
+3. Page Classes – Each web page has a corresponding class using the POM structure. 
+These classes contain element locators and reusable methods to interact with those elements on the page.
+
+4. Test Classes – These are actual test scripts written in TestNG. 
+They use methods from Page Classes to perform actions and assertions.
+
+5. Utilities – We have utility classes for handling things like:
+
+Reading from Excel (using Apache POI) for data-driven testing
+Taking screenshots on failures
+Logging (using Log4j or built-in Java logger)
+
+6. Data-Driven – Test data is stored in Excel or JSON files, and we use TestNG’s @DataProvider 
+or custom utilities are used to parameterize test cases.
+
+7. Reports – We integrated ExtentReports to generate HTML reports with screenshots and test logs.
+
+8. CI/CD – The framework is integrated with Jenkins for scheduled and pipeline-based executions. Git is used for version control and team collaboration.
+
+In my project, we used Dockerized Selenium Grid to run tests in parallel across different browsers. 
+We used Docker Compose to start the Selenium Grid, which includes the Hub and browser Node containers like Chrome and Firefox. 
+Our tests used RemoteWebDriver to connect to the grid endpoint. 
+This setup helped us improve test execution speed and made the framework CI-ready by integrating it with Jenkins.
+
+What is Docker Compose?
+Docker Compose is a tool that lets you define and run multiple Docker containers using a single YAML file (docker-compose.yml).
+💡 Instead of running many docker run commands manually, Docker Compose allows you to define all services and run them with one command:
+docker-compose up
+
+
+1. Base Class
+2. Base Page
+3. Page Classes
+4. Test Classes
+5. Utility Classes (Excel, ExtentReport, Log4j, DataProviders)
+6. Data-Driven Testing (DataProviders)
+7. Reports
+8. CI/CD Integration

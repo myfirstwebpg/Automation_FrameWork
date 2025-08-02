@@ -1,0 +1,349 @@
+
+Create a new Maven Project
+Add required dependencies in po.xml (Please check links below) 
+https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
+https://mvnrepository.com/artifact/org.apache.poi/poi
+https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+https://mvnrepository.com/artifact/commons-io/commons-io
+https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+https://mvnrepository.com/artifact/org.testng/testng
+https://mvnrepository.com/artifact/com.aventstack/extentreports
+https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager
+
+Components of a Hybrid Framework
+
+| Component                   | Purpose                                                               |
+| --------------------------- | --------------------------------------------------------------------- |
+| **BaseClass**               | Handles WebDriver initialization, browser setup, teardown.            |
+| **Page Object Model (POM)** | Represents UI pages as Java classes (pageObjects folder).             |
+| **Test Cases**              | Contains actual test methods using TestNG or JUnit.                   |
+| **Utility Classes**         | For common tasks like Excel reading (Apache POI), screenshots, waits. |
+| **Configuration Files**     | `config.properties`, `log4j2.xml`, `testng.xml` for external control. |
+| **Test Data**               | External data sources (Excel, CSV, JSON).                             |
+| **Reports**                 | HTML or extent reports for results.                                   |
+| **Logging**                 | Log4j for logging execution details.                                  |
+
+Structure:
+
+HybridFramework/
+├── src/
+│   ├── test/java/
+│   │   ├── base/             → BaseClass.java
+│   │   ├── testCases/        → AccountRegistrationTest.java
+│   │   ├── pageObjects/      → LoginPage.java, HomePage.java
+│   │   ├── utilities/        → ExcelUtils.java, WaitHelper.java
+│   │   └── config/           → config.properties
+│   ├── resources/
+│   │   ├── log4j2.xml
+│   │   └── testData.xlsx
+├── testng.xml
+├── pom.xml
+└── reports/
+    └── test-output/
+
+
+Development of Hybrid Driven Framework
+--------------------------------------
+1) Test case: Account Registration
+1.1: Create BasePage under "pageObjects" which includes only constructor. 
+This will be invoked by every Page Object Class constructor (Re-usability).
+1.2: Create Page Object Classes for HomePage. Registration Page under pageObjects package. (These classes extends from BasePage).
+1.3: Create AccountRegistration Test under "testCases"
+1.4: Create BaseClass under testBase package and copy re-usable methods.
+1.5: Create re-usable methods to generate random numbers and strings in BaseClass.
+
+
+2) Adding logs to test case (log4j2)
+2.1: Add log4j2.xml file under src/test/resourses. 
+2.2: Update BaseClass.
+2.3: Add log statements to AccountRegistrationTest.
+
+
+Logging record all the events in the form of text.
+Log Levels All < Trace < Debug < Info< Warn< Error < Fatal < Off
+Appenders - where to generate logs (Console/File)
+Loggers - what type of logs generate (All < Trace < Debug Info Warn <Error < Fatal < Off)
+
+
+3) Run Tests on Desired Browser/Cross Browser/Parallel
+3.1: Create testng.xml to Run Tests with Parameterized Browser and OS parameters
+     Define parameters like browser and os in XML.
+     Link to your test class.
+     These parameters will be read by the setup() method in BaseClass.
+     
+3.2: Update BaseClass with setup() Method That Reads Browser Name
+     Use @Parameters({"browser", "os"}) in your @BeforeClass method.
+     Launch browser based on the value of the browser parameter using a switch or if condition.
+     
+3.3: Maintain a Separate XML to Run Tests on Multiple Browsers in Parallel (like parallel-testng.xml) that:
+     Contains multiple <test> tags with different browsers.
+     Uses parallel="tests" and thread-count="n" to run them in parallel.
+     Runs the same class (or different classes) on multiple browsers simultaneously.
+
+4) Read Common values from config.properties file.
+4.1: Add config.properties file under src/test/resoures.I
+4.2: Update BaseClass→setup() method, add script to load config.properties file.
+4.3: Replace hard coded values in Test Cases like url, username, password etc...
+
+
+5) Login Test Case
+5.1: Create and update page object classes. 
+     Login Page, MyAccountPage - new classes ,
+     HomePage - update by adding login link element
+5.2: Create LoginTest
+5.3: Add entry testng.xml
+
+6) Data Driven Login Test
+6.1: Prepare test data in Excel, place the excel file inside the testData folder.
+6.2: Create ExcelUtility class under utilities package.
+6.3: Update Page Object class MyAccountPage, add logout link element
+6.4: Create DataProviders class in utilities package to maintain data providers for data driven tests.
+6.5: Create LoginDataDriven Test under testCases package.
+6.6: Add an Entry in testng.xml file
+
+7) Grouping Tests
+7.1: Add all test cases into specific group (sanity, regression, master etc.). I
+7.2: Also add BaseClass methods setup() & teardown() to a separate group.
+7.3: Create separate TestNG xml file(grouping.xml) to run groups and include groups which we want to execute.
+
+
+8) Add Extent Reports to Project
+8.1: Create ExtentReportUtility utility class under utilities package.
+8.2: Add captureScreen() method in BaseClass
+8.3: Add ExtentReportUtility (Listener class) entry in testng.xml file.
+8.4: Make sure WebDriver is static in BaseClass, we refer same driver instance in ExtentReportUtility.
+     We make WebDriver static in BaseClass so that other classes (like ExtentReportUtility) can use the 
+     same browser instance without needing to create a new object of BaseClass.
+     
+     new BaseClass().captureScreen() creates a new object → that new object has its own driver (which is null unless static).
+     If driver is static, then it's shared → so it works even when accessed via a new object.
+     You make WebDriver static in BaseClass to share the same browser session across all utility classes like ExtentReportUtility.
+
+9) Run Failed Tests.
+test-output-testng-failed.xml
+
+10) Run Tests on Selenium Grid
+
+Grid Setup:
+----------
+1. Download Selenium grid from- selenium-server-4.15.0.jar and place it somewhere. 
+2. Run below command to start Selenium Grid (by changing the version to the downloaded)
+java -jar selenium-server-4.33.0.jar standalone 
+3. URL to see sessions: http://localhost:4444/
+
+10.1: Add execution_env=local/remote in config.properties file under resources folder. 
+10.2: Update setup() method in the BaseClass (capture execution environment from config.properties 
+file then add required capabilities of OS & Browser in conditions).
+
+Standalone Setup (Single machine):
+----------------------------------
+1. Download Selenium grid from- selenium-server-4.15.0.jar and place it somewhere. 
+2. Run below command to start Selenium Grid (by changing the version to the downloaded)
+java -jar selenium-server-4.33.0.jar standalone 
+3. URL to see sessions: http://localhost:4444/
+
+Hub & Node Setup (Multiple machines):
+-------------------------------------
+1. Download selenium-server-4.15.0.jar and place it somewhere in both (hub & node) the machines.
+2. Run below command to make machine as hub java -jar selenium-server-4.15.0.jar hub
+3. Run below command to make machine as node
+java -jar selenium-server-4.15.0.jar node --hub http://<hub-ip>:4444
+4. URL to see sessions: http://localhost:4444/
+
+
+public class SeleniumGrid {
+public static void main(String args[]) throws MalformedURLException, InterruptedException
+{
+    // The URL will be IP Address of Hub Machine + Hub Port + /wd/hub //http://192.168.13.1:4444/wd/hub or http://localhost:4444/wd/hub
+    String huburl="http://localhost:4444/wd/hub";
+    DesiredCapabilities cap = new DesiredCapabilities();
+    cap.setPlatform(Platform.WIN11); //cap.setPlatform(Platform.MAC); 
+    cap.setBrowserName("chrome"); //cap.setBrowserName("Microsoft Edge")
+    WebDriver driver = new RemoteWebDriver(new URL(huburl), cap);
+    driver.get("https://www.google.com"); 
+    System.out.println(driver.getTitle());
+    driver.quit();
+}
+}
+
+
+11) Run Tests on Docker with Selenium Grid Environment.
+
+Refer the DockerSetup Document for commands
+
+Docker- Containerization
+
+In our automation framework, we use Selenium Grid for running test cases in parallel across multiple browsers and machines. 
+To simplify the setup and scalability, we use Docker to containerize the Selenium Grid components. 
+We pull the necessary images like selenium/hub and selenium/node-chrome from Docker Hub and use Docker Compose to spin up the entire Grid quickly. 
+This helps us save time and ensures consistency across environments.
+
+We use Selenium Grid in a Dockerized setup to support distributed and parallel execution of Selenium tests. 
+of manually setting up the hub and nodes, we use Docker containers for each component—hub, Chrome node, and Firefox node.
+These images are pulled from Docker Hub, which simplifies dependency management. 
+We define everything in a docker-compose.yml file, so we can bring up the whole grid with a single command. 
+This setup is easily integrated into our CI/CD pipeline using Jenkins, 
+allowing automated test execution in a scalable and consistent environment
+
+How It Works in Your Framework ?
+--------------------------------
+1. Test scripts are written using TestNG + Selenium WebDriver.
+2. Execution environment (local or remote) is defined in a config file.
+3. If remote:
+   Selenium tests connect to the hub URL (http://localhost:4444/wd/hub).
+   Grid distributes tests to available browser nodes (Chrome, Firefox).
+4. Selenium Grid is run via Docker Compose.
+5. Docker images are pulled from Docker Hub automatically.
+
+
+12) Run script using pom.xml, Command Prompt & .bat file
+
+Run using POM.xml:
+------------------
+Maven Compiler Plugin -> Used to compile the Java source code
+Maven Surefire Plugin -> Used to run TestNG test cases. Add your TestNG XML suite in its configuration
+In pom.xml --> Run maven test
+
+To run script from Command Prompt (Outside Eclipse)
+----------------------------------------------------
+1. Install Maven Manually - OS level
+
+Download from https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip
+Configure the Maven path to Environment Variables -> C:\Program Files\apache-maven-3.9.11\bin
+
+Run mvn -v to verify installation
+
+2. Run Maven Test via Command Prompt
+
+Open Command Prompt
+**Change to your project directory: Use cd to go to the folder that contains your pom.xml.
+For example: cd C:\Users\Lenovo\eclipse-workspace\Automation_FrameWork
+Replace this path with the actual path where your project and pom.xml is located.
+**Run Maven test: mvn clean test
+
+Create a .bat File to Run Maven Script
+---------------------------------------
+1. Open Notepad (or any text editor) - Paste the following code into it:
+@echo off
+cd /d C:\Users\Lenovo\eclipse-workspace\Automation_FrameWork
+mvn clean test
+pause
+
+2. Save the File with .bat Extension
+In Notepad, go to File > Save As
+In "Save as type", choose All Files
+Name the file: run_automation.bat
+Save it to any location (e.g., Desktop for easy access)
+
+3. Run the Script
+Double-click the run_automation.bat file. It will:
+Open Command Prompt
+Navigate to your project directory
+Execute mvn clean test
+Keep the window open (because of pause) so you can see the output
+
+13) Push the code to Git and Github repository
+Pre-requisites:
+Git installation - Local
+Create GitHub account - Remote
+
+Git and GitHub Workflow:
+------------------------
+Git File Lifecycle – Step-by-Step Flow
+
+1. Untracked File
+The file is newly created in your project but not being tracked by Git.
+Location: Working Directory
+➡️ Command to move to next stage: 
+git add <filename>
+
+2. Tracked File (Staged File)
+The file is now tracked by Git and staged for commit.
+Location: Staging Area
+➡️ Command to move to next stage: 
+git commit -m "Commit message"
+
+3. Committed File
+The file has been committed to the local Git repository.
+Location: Git Repository (Local)
+➡️ Command to move to next stage: 
+git push origin <branch-name>
+
+4. Remote File
+The file is now uploaded to the remote repository (like GitHub).
+Location: GitHub / GitLab / Bitbucket (Remote Repo)
+
+💡 Summary Table
+| File Status    | Location          | Command Used               |
+| -------------- | ----------------- | -------------------------- |
+| Untracked File | Working Directory | `git add`                  |
+| Tracked File   | Staging Area      | `git commit -m "message"`  |
+| Committed File | Local Repository  | `git push origin <branch>` |
+| Remote File    | GitHub Repository | —                          |
+
+Round 1 - Initial Setup
+------------------------
+1) Create a new local repository (one time)
+git init
+
+2) Provide user info to Git repo (one time)
+git config --global user.name "your name"
+git config --global user.email "your email"
+
+3) Add files/folders to staging/indexing
+| Command              | Purpose                                   |
+| -------------------- | ----------------------------------------- |
+| `git add -A`         | Adds **all files and folders** to staging |
+| `git add filename`   | Adds a specific file                      |
+| `git add *.java`     | Adds all `.java` files                    |
+| `git add foldername` | Adds a specific folder                    |
+
+4) Commit the code into Local (Git) repository
+git commit -m "commit message"
+
+5) Connect local repository with remote (GitHub) repository (one time)
+git remote add origin "https://github.com/pavanoltraining/OpencartV121.git"
+Replace the URL with your own GitHub repo link.
+
+6) Push the code into the remote repository
+git push origin master
+If your main branch is named main, use git push origin main instead.
+
+Token:
+
+Round 2 – Daily Git Workflow
+----------------------------
+git add -A                                # Stage all changes
+git commit -m "commit message"            # Commit with message
+git push origin master                    # Push to remote repo (or use main)
+
+Pull Latest Code from GitHub
+------------------------------
+git pull "https://github.com/pavanoltraining/opencart.git"
+
+Cloning a GitHub Repository
+---------------------------
+git clone <repository-URL>
+
+
+| Action      | Purpose                                         |
+| ----------- | ----------------------------------------------- |
+| `git clone` | First-time copy of a remote repo to your system |
+| `git pull`  | Pull latest changes into an already cloned repo |
+
+To Check Current State
+----------------------
+git status 
+
+🔹 Purpose:
+Shows the current state of your working directory and staging area.
+🔹 Output Includes:
+Files modified but not staged
+Files staged and ready to commit
+Files untracked (new files not added yet)
+If your branch is ahead/behind the remote
+
+14) Run tests using Jenkins
+
