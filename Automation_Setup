@@ -304,7 +304,7 @@ git config --global user.email "your email"
 git commit -m "commit message"
 
 5) Connect local repository with remote (GitHub) repository (one time)
-git remote add origin "https://github.com/pavanoltraining/OpencartV121.git"
+git remote add origin "https://github.com/myfirstwebpg/Automation_FrameWork"
 Replace the URL with your own GitHub repo link.
 
 6) Push the code into the remote repository
@@ -321,7 +321,7 @@ git push origin master                    # Push to remote repo (or use main)
 
 Pull Latest Code from GitHub
 ------------------------------
-git pull "https://github.com/pavanoltraining/opencart.git"
+git pull "https://github.com/myfirstwebpg/Automation_FrameWork"
 
 Cloning a GitHub Repository
 ---------------------------
