@@ -202,6 +202,7 @@ How It Works in Your Framework ?
 
 Run using POM.xml:
 ------------------
+Add the below pluginManagement in POM.XML
 Maven Compiler Plugin -> Used to compile the Java source code
 Maven Surefire Plugin -> Used to run TestNG test cases. Add your TestNG XML suite in its configuration
 In pom.xml --> Run maven test
@@ -333,8 +334,8 @@ git clone <repository-URL>
 | `git clone` | First-time copy of a remote repo to your system |
 | `git pull`  | Pull latest changes into an already cloned repo |
 
-To Check Current State
-----------------------
+To Check Current State and Remove
+---------------------------------
 git status 
 
 🔹 Purpose:
@@ -345,5 +346,70 @@ Files staged and ready to commit
 Files untracked (new files not added yet)
 If your branch is ahead/behind the remote
 
+Git Command Line to Delete/Remove
+git rm z_test
+git commit -m "Deleted z_test file"
+git push origin master   # or main
+
+
 14) Run tests using Jenkins
 
+Jenkins Automation Testing – Setup Steps
+
+1️. Start Jenkins:
+   
+   Execute in Command Prompt from the Jenkins folder: java -jar jenkins.war   
+   Access Jenkins at: http://localhost:8080/
+
+2. Install Required Plugins:
+
+   Go to: Manage Jenkins → Plugin Manager → Available
+   
+   Install the following:
+   - Git plugin
+   - Maven Integration plugin
+   - (Optional for reports: HTML Publisher, TestNG Results, Allure Report)
+
+3. Configure Tool Locations:
+
+   Go to: Manage Jenkins → Global Tool Configuration
+
+   ✔️ JDK
+      Name: jdk-17
+      Path: C:\Program Files\Java\jdk-17
+
+   ✔️ Git
+      Name: git
+      Path: C:\Program Files\Git\bin\git.exe
+
+   ✔️ Maven
+      Name: maven-3.9.6
+      Path: C:\Program Files\Apache\Maven\apache-maven-3.9.6\bin
+
+4. Create a New Jenkins Job:
+
+   - Go to: Jenkins Dashboard → New Item
+   - Enter an item name: Automation_Testing_Job
+   - Select: Maven Project → OK
+
+5. Configure Job Settings:
+
+   📁 Source Code Management:
+   - Select: Git
+   - Repository URL: <Your GitHub repo URL>
+
+   🔨 Build Configuration:
+   - Root POM: pom.xml
+   - Goals and options: test
+
+   📄 Post-build Actions (Optional):
+   - Add "Publish HTML reports"
+   - HTML directory to archive: target/surefire-reports
+   - Index page[s]: emailable-report.html
+   
+6️. Run the Job:
+
+   - Click "Build Now"
+   - View Console Output
+   - Check "Workspace" and "Test Result" tabs
+   
