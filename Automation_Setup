@@ -352,6 +352,24 @@ git commit -m "Deleted z_test file"
 git push origin master   # or main
 
 
+In Git, you MUST run Git commands from your **project folder** (where `.git` is initialized) in Git bash
+Example:
+  cd C:\Users\Lenovo\eclipse-workspace\Automation_FrameWork
+
+❗ Why?
+Git tracks changes inside a specific project using a hidden `.git` folder.
+If you're outside that folder, Git won’t recognize it as a repository.
+
+To check if you're in the correct folder:
+  git status
+
+If it shows the file status ➝ ✅ you're in the right folder.
+If it shows "not a git repository" ➝ ❌ you're outside the Git project.
+
+When is the .git Folder Created?
+Option 1: You start Git in your local folder -> git init
+Option 2: You clone a remote repository -> git clone https://github.com/yourname/repo.git
+
 14) Run tests using Jenkins
 
 Jenkins Automation Testing – Setup Steps
